@@ -7,6 +7,11 @@ published in the *Journal of Sports Sciences* and provides an automated
 system for calculating Expected Pass Turnover (xTurnover) metrics in football
 analytics.
 
+**"Predicting turnovers in football using spatial and contextual data:
+An expected turnover model"**\
+*Journal of Sports Sciences*, 2024\
+DOI: 10.1080/02640414.2024.2379697
+
 🔗 [Link to Paper](https://www.tandfonline.com/doi/full/10.1080/02640414.2024.2379697)
 
 ## Data Requirements
@@ -33,15 +38,6 @@ This ensures reproducibility and matches the feature-engineering approach descri
 
 **This model assumes you have already processed your raw data to include
 all required features.**
-
-## 📖 Academic Background
-
-This project implements the xTurnover model described in:
-
-**"Predicting turnovers in football using spatial and contextual data:
-An expected turnover model"**\
-*Journal of Sports Sciences*, 2024\
-DOI: 10.1080/02640414.2024.2379697
 
 
 ## 📊 Model Inputs
