@@ -17,7 +17,7 @@ Following Peters et al., two categories of positional features were derived: **d
 
 For each sector, a binary indicator was created representing whether at least one **unmarked teammate** was available.
 
-![Directional Teammate Illustration](figures/Positional_Features.png)
+![Directional Teammate Illustration](../figures/Positional_Features.png)
 
 ## Pressure-Radius Features
 
@@ -34,7 +34,7 @@ Three radii were generated:
 
 For each radius, the number of opponents within the area was counted.
 
-![Pressing radii Illustration](figures/Pressure_Radii.png)
+![Pressing radii Illustration](../figures/Pressure_Radii.png)
 
 ## Final Variables
 
