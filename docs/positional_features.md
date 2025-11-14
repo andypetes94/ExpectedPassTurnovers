@@ -17,7 +17,7 @@ Following Peters et al., two categories of positional features were derived: **d
 
 For each sector, a binary indicator was created representing whether at least one **unmarked teammate** was available.
 
-![Directional Teammate Illustration](../figures/Positional_Features.png)
+![Directional Teammate Illustration](../figures/Orientation.png)
 
 ## Pressure-Radius Features
 
