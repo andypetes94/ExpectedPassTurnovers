@@ -40,16 +40,6 @@ An expected turnover model"**\
 *Journal of Sports Sciences*, 2024\
 DOI: 10.1080/02640414.2024.2379697
 
-## ✨ Key Features
-
--   Peer-reviewed methodology
--   Stratified 5-fold cross-validation
--   Mixed-effects logistic regression
--   Full performance metric suite
--   Pass Risk categorisation
--   Automation-ready pipeline
--   Timestamped outputs
--   Error handling
 
 ## 📊 Model Inputs
 
@@ -190,7 +180,7 @@ player_analysis <- results$xTurnover_dataset %>%
 
 ------------------------------------------------------------------------
 
-# 🔧 Customization
+# 🔧 Customisation
 
 ## **Model Parameters**
 
@@ -247,27 +237,9 @@ The pipeline includes robust safeguards:
 
 ------------------------------------------------------------------------
 
-# 🤝 Academic Collaboration
+# 🤝 Contributing
 
 We welcome extensions, replications, and methodological improvements.
-
-## **Research Opportunities**
-
--   Multi-league validation.
--   Advanced feature engineering.
--   Real-time model application.
--   Integration with other football metrics.
-
-## **Contribution Guidelines**
-
--   Maintain scientific rigor.
--   Document methodology changes thoroughly.
--   Validate against independent datasets.
--   Follow reproducible research practices.
-
-------------------------------------------------------------------------
-
-# 🤝 Contributing
 
 1.  Fork the repository\
 
@@ -323,4 +295,4 @@ football analytics research.
 
 **Research Note:**
 Model performance may vary across leagues, seasons, and
-contexts --- validate on your own dataset.
+contexts (you must validate on your own dataset).
