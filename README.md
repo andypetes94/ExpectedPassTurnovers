@@ -39,6 +39,9 @@ This ensures reproducibility and matches the feature-engineering approach descri
 **This model assumes you have already processed your raw data to include
 all required features.**
 
+**Note:** There is sample data provided in this repository: [sample_data.csv](sample_data.csv).
+In addition, there is a sample output folder: [turnover_model_results_20251114_155537/](turnover_model_results).
+
 
 ## 📊 Model Inputs
 
@@ -197,17 +200,6 @@ You may edit the script to change:
 -   Output filenames.
 -   Additional summary statistics.
 -   Custom plots or visualisations.
-
-------------------------------------------------------------------------
-
-# 🚨 Error Handling
-
-The pipeline includes robust safeguards:
-
--   **Data validation:** Required column checks.
--   **File checks:** Ensures input files exist.
--   **Model convergence warnings**.
--   **Output verification**.
 
 ------------------------------------------------------------------------
 
