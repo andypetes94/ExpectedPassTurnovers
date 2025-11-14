@@ -4,10 +4,10 @@
 
 The positional dataset contained multiple rows per event freeze-frame. These have to be nested, to enable linkage to a single event within the event data. 
 Two categories of positional features have to be derived:
-  - **Directional Unmarked Teammate Options** 
-  - **Pressure-Radius Counts**.
+  - **1) Directional Unmarked Teammates** 
+  - **2) Pressure-Radius Counts**.
 
-## Directional Unmarked Teammate Features
+## 1) Directional Unmarked Teammates
 
 1. Coordinates were rescaled to meters relative to each team’s pitch dimensions.  
 2. Minimum distances between each possession-team player and each defender were computed.  
@@ -22,7 +22,7 @@ For each sector, a binary indicator was created representing whether at least on
 
 ![Directional Teammate Illustration](../figures/Orientation.png)
 
-## Pressure-Radius Features
+## 2) Pressure-Radius Counts
 
 Pressure radii were adjusted based on distance to the center (in metres) of the opposition goal:
 
