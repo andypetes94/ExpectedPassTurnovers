@@ -157,16 +157,16 @@ required preprocessing (pressing, orientation, spatial features).
 ## 2. **Model Execution**
 
 ``` bash
-./run_turnover_model.sh premier_league_data.csv
+./run_turnover_model.sh your_sample_data.csv
 ```
 
 ------------------------------------------------------------------------
 
 ## 3. **Results Analysis**
 
--   Review `model_report.txt` for performance summary\
--   Analyze `dataset_with_xTurnover.csv` for insights\
--   Use statistical tests to validate empirical findings
+-   Review `model_report.txt` for performance summary.
+-   Analyze `dataset_with_xTurnover.csv` for insights.
+-   Use statistical tests to validate empirical findings.
 
 ------------------------------------------------------------------------
 
