@@ -18,7 +18,7 @@ pipeline alone.
 
 1.  **Positional Feature Engineering**: This repository includes a transparent and fully documented workflow for constructing positional features from StatsBomb 360 freeze-frames (2020/21 Premier League). The full methodology—including directional teammate options, pressure radii, coordinate scaling, and join logic—is described here:
 
-👉 [Positional Feature Engineering](figures/Positional_Features.md)
+👉 [Positional Feature Engineering](docs/positional_features.md)
 
 This ensures reproducibility and matches the feature-engineering approach described by Peters et al. in the original xTurnover research.
 
