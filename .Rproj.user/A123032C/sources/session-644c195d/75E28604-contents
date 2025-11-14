@@ -1,10 +1,10 @@
 # xTurnover: Expected Turnover Model for Football Pass Analysis
 
-A complete machine learning pipeline that predicts the probability of
+A machine learning pipeline that predicts the probability of
 turnovers in football passes using mixed-effects logistic regression
 with cross-validation. This implementation is based on the methodology
 published in the *Journal of Sports Sciences* and provides an automated
-system for calculating Expected Turnover (xTurnover) metrics in football
+system for calculating Expected Pass Turnover (xTurnover) metrics in football
 analytics.
 
 ## Data Requirements
@@ -16,8 +16,14 @@ pipeline alone.
 
 ### Required Preprocessing Steps
 
-1.  **Positional Feature Generation**: Several key variables must be
-    pre-computed from positional data.
+1.  **Positional Feature Engineering**: This repository includes a transparent and fully documented workflow for constructing positional features from StatsBomb 360 freeze-frames (2020/21 Premier League). The full methodology—including directional teammate options, pressure radii, coordinate scaling, and join logic—is described here:
+
+👉 [Positional Feature Engineering](figures/Positional_Features.md)
+
+This ensures reproducibility and matches the feature-engineering approach described by Peters et al. in the original xTurnover research.
+
+![Positional Features](figures/Positional_Features.png)
+
 2.  **Data Structure Compliance**: Your dataset must contain all
     variables listed in the "Model Inputs" section.
 3.  **Variable Naming**: Column names must match exactly as specified.
