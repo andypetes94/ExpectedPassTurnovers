@@ -40,6 +40,7 @@ This ensures reproducibility and matches the feature-engineering approach descri
 all required features.**
 
 **Note:** There is sample data provided in this repository: [sample_data.csv](sample_data.csv).
+
 In addition, there is a sample output folder: [turnover_model_results_20251114_155537/](turnover_model_results).
 
 
