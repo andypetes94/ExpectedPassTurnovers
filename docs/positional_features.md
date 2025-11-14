@@ -1,8 +1,11 @@
 # Positional Feature Engineering
 
-**Data Source:** StatsBomb 360 freeze-frames from the 2020/21 Premier League season (StatsBomb, 2022).  
-The positional dataset contained multiple rows per event freeze-frame.  
-Following Peters et al., two categories of positional features were derived: **directional unmarked-teammate options** and **pressure-radius counts**.
+**Data Source:** StatsBomb 360 freeze-frames from the 2020/21 Premier League season.  
+
+The positional dataset contained multiple rows per event freeze-frame. These have to be nested, to enable linkage to a single event within the event data. 
+Two categories of positional features have to be derived:
+  - **Directional Unmarked Teammate Options** 
+  - **Pressure-Radius Counts**.
 
 ## Directional Unmarked Teammate Features
 
@@ -21,11 +24,10 @@ For each sector, a binary indicator was created representing whether at least on
 
 ## Pressure-Radius Features
 
-Pressure radii were adjusted based on distance to the opposition goal:
+Pressure radii were adjusted based on distance to the center (in metres) of the opposition goal:
 
 - If **>24 m** from goal → base radius = **4.5 m**  
-- If **≤24 m** → base radius =  
-  `distance_to_goal × 0.15 + 0.85`
+- If **≤24 m** → base radius =  `distance_to_goal × 0.15 + 0.85`
 
 Three radii were generated:
 - 0.5 × base radius  
