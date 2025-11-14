@@ -1,0 +1,27 @@
+# RStudio files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# OS files
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Generated model outputs
+# turnover_model_results_*/
+output/
+results/
+*.rds
+*.Rds
+
+# Data
+#*.csv
+
+# If using renv
+renv/library/
+renv/staging/
