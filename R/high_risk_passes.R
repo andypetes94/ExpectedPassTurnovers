@@ -1,24 +1,17 @@
-#!/usr/bin/env Rscript
-
 # ============================================================
-# High-Risk Pass Analysis – Command Line Script
-# Saves:
-#   - PNG plot
-#   - Clustered data CSV
-#   - K-means model RDS
-#   - Supports variable number of clusters (default = 6)
+# high_risk_passes.R
+#
+# Contains: analyse_high_risk_passes()
+#
+# This function performs:
+#   - Filtering of high-risk passes
+#   - K-means clustering
+#   - Plot generation (ggplot2 + ggsoccer)
+#   - Returns a list: plot, cluster data, and k-means model
+#
+# No command-line argument parsing and no file saving occur here.
 # ============================================================
 
-suppressPackageStartupMessages({
-  library(optparse)
-  library(dplyr)
-  library(ggplot2)
-  library(ggsoccer)
-})
-
-# ------------------------------------------------------------
-# ANALYSIS FUNCTION (updated with cluster_count argument)
-# ------------------------------------------------------------
 analyse_high_risk_passes <- function(
     data,
     data_provider = "statsbomb",
@@ -121,82 +114,3 @@ analyse_high_risk_passes <- function(
     kmeans_result = kmeans_result
   ))
 }
-
-# ------------------------------------------------------------
-# COMMAND-LINE ARGUMENTS (new: --clusters)
-# ------------------------------------------------------------
-option_list <- list(
-  make_option(c("-d", "--data"), type = "character", help = "Dataset CSV file"),
-  make_option(c("-t", "--team"), type = "character", help = "Team name"),
-  make_option(c("-p", "--provider"), type = "character", default = "statsbomb",
-              help = "Data provider name"),
-  make_option(c("-r", "--riskcol"), type = "character", default = "risk_category",
-              help = "Risk column name"),
-  make_option(c("-n", "--clusters"), type = "integer", default = 6,
-              help = "Number of clusters to compute (default = 6)"),
-  make_option(c("-o", "--output"), type = "character", default = "high_risk_plot.png",
-              help = "Output plot filename"),
-  make_option(c("-c", "--clusterout"), type = "character",
-              default = "cluster_output.csv",
-              help = "Output CSV for cluster data"),
-  make_option(c("-k", "--kmodel"), type = "character",
-              default = "kmeans_model.rds",
-              help = "Output RDS filename for kmeans model")
-)
-
-opt <- parse_args(OptionParser(option_list = option_list))
-
-if (is.null(opt$data) || is.null(opt$team)) {
-  stop("Error: You must supply --data and --team\n", call. = FALSE)
-}
-
-# ------------------------------------------------------------
-# LOAD DATA
-# ------------------------------------------------------------
-cat("Loading data from:", opt$data, "\n")
-data <- read.csv(opt$data)
-
-# ------------------------------------------------------------
-# RUN ANALYSIS
-# ------------------------------------------------------------
-cat("Running high-risk pass analysis using", opt$clusters, "clusters...\n")
-
-result <- analyse_high_risk_passes(
-  data = data,
-  data_provider = opt$provider,
-  team = opt$team,
-  risk_column = opt$riskcol,
-  cluster_count = opt$clusters
-)
-
-# ------------------------------------------------------------
-# Ensure output directory exists
-# ------------------------------------------------------------
-output_dir <- "high_risk_passes_output"
-
-if (!dir.exists(output_dir)) {
-  cat("Creating output directory:", output_dir, "\n")
-  dir.create(output_dir, recursive = TRUE)
-}
-
-# Build full output paths
-plot_path <- file.path(output_dir, opt$output)
-cluster_path <- file.path(output_dir, opt$clusterout)
-kmodel_path <- file.path(output_dir, opt$kmodel)
-
-# ------------------------------------------------------------
-# Save Outputs
-# ------------------------------------------------------------
-cat("Saving plot to:", plot_path, "\n")
-ggsave(plot_path, plot = result$plot, width = 10, height = 8, dpi = 300)
-
-cat("Saving cluster data to:", cluster_path, "\n")
-write.csv(result$cluster_data, cluster_path, row.names = FALSE)
-
-cat("Saving kmeans model to:", kmodel_path, "\n")
-saveRDS(result$kmeans_result, kmodel_path)
-
-cat("\n✅ Analysis complete!\n")
-cat(" - Plot saved:", plot_path, "\n")
-cat(" - Cluster data:", cluster_path, "\n")
-cat(" - K-means model:", kmodel_path, "\n")
