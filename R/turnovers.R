@@ -101,14 +101,14 @@ compute_turnover_plot <- function(
       data = team_turnover_summary,
       aes(xmin = p75_turnovers, xmax = Inf,
           ymin = 0.5, ymax = max_y + 0.5),
-      fill = "red", color = NA, alpha = 0.4
+      fill = '#DB444B', color = NA, alpha = 0.4
     ) +
-    geom_col(fill = "steelblue") +
+    geom_col(fill = '#006BA2') +
     geom_rect(
       data = team_turnover_summary,
       aes(xmin = median_turnovers - 0.25, xmax = median_turnovers + 0.25,
           ymin = 0.5, ymax = max_y + 1),
-      color = NA, fill = "black", alpha = 0.8
+      color = NA, fill = '#3EBCD2', alpha = 0.8
     ) +
     geom_text(aes(label = round(turnovers_per_100, 1)),
               size = 3, color = "white", hjust = 1.2, family = "Lato") +
@@ -116,7 +116,7 @@ compute_turnover_plot <- function(
                switch = "y") +
     labs(
       title = paste0("Expected Pass Turnovers per 100 Passes | Team: ", team_name),
-      subtitle = paste("Median Indicated by Black Line | >75 Percentile Indicated by Red Zone"),
+      subtitle = paste("Median Indicated by Light Blue Line | > 75th Percentile Indicated by Red Zone"),
       x = "Turnovers per 100 Passes",
       y = "Player"
     ) +
