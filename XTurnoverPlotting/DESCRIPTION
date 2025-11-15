@@ -1,0 +1,18 @@
+Package: XTurnoverPlotting
+Type: Package
+Title: Plotting Functions using Expected Turnovers Data
+Version: 0.1.0
+Authors@R: person("Andrew Peters", email = "andrewpeters1994@gmail.com", role = c("aut", "cre"))
+Description: Functions and scripts to plot and high-risk passes and identify pressing targets for football teams. 
+    Includes clustering of high-risk passes and per-player turnover visualisations.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+Depends: 
+    R (>= 4.0.0)
+Imports: 
+    dplyr,
+    ggplot2,
+    ggsoccer
+RoxygenNote: 7.3.3
