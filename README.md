@@ -217,6 +217,8 @@ result_plot <- compute_turnover_plot(
 print(result_plot)
 ```
 
+![Example Turnover Plot](figures/example_team_turnover_plot.png)
+
 #### 2️⃣ High-Risk Pass Clustering
 
 ```r
@@ -233,6 +235,8 @@ result <- analyse_high_risk_passes(
 print(result$plot)
 head(result$cluster_data)
 ```
+
+![Example High-Risk Passes Plot](figures/example_high_risk_pass_plot.png)
 
 ### 📁 Output
 
