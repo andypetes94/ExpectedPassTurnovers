@@ -38,17 +38,44 @@ This ensures reproducibility and matches the feature-engineering approach descri
 2. **Data Structure Compliance**: Your dataset must contain all
    variables listed in the "Model Inputs" section.
 3. **Variable Naming**: Column names must match exactly as specified.
+                                                                  |
+## Data Requirements
 
-## Required Features
+**Ensure your dataset contains all required variables**. Feature preprocessing is required for positional, spatial, and contextual metrics.  
 
-| Category             | Variables                                                                                                  |
-| -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Basic Event Data     | `turnover_count`, `player.name`, `match_id`, `position_group`                                              |
-| Spatial Features     | `x`, `y`, `x_end`, `y_end`, `distance_ball_moved`, `ball_movement_speed`, `percent_distance`, `pass.angle` |
-| Contextual Features  | `play_pattern.name`, `pass.type.name`                                                                      |
-| Pressing Features    | `pressing_count_1`, `pressing_count_2`, `pressing_count_3`                                                 |
-| Teammate Orientation | `right_option`, `front_option`, `left_option`, `back_option`                                               |
-| Metadata Variables   | `team.name`, `x_end`, `y_end`                                                                              |
+### Required Features
+
+| Category | Variables |
+|----------|-----------|
+| Basic Event Data | `turnover_count`, `player.name`, `match_id`, `position_group` |
+| Spatial Features | `x`, `y`, `x_end`, `y_end`, `distance_ball_moved`, `ball_movement_speed`, `percent_distance`, `pass.angle` |
+| Contextual Features | `play_pattern.name`, `pass.type.name` |
+| Pressing Features | `pressing_count_1`, `pressing_count_2`, `pressing_count_3` |
+| Teammate Orientation | `right_option`, `front_option`, `left_option`, `back_option` |
+| Metadata Variables | `team.name`, `x_end`, `y_end` |
+
+### Feature Explanation
+| Variable                                                     | Feature                                                         | Definition                                                                                                  | Type       | Unit                                                                                          |
+| ------------------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------- |
+| `x`                                                          | Ball Carrier X Co-ordinate                                      | The x co-ordinate of the pass origin.                                                                       | Event      | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
+| `y`                                                          | Ball Carrier Y Co-ordinate                                      | The y co-ordinate of the pass origin.                                                                       | Event      | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
+| `ball_movement_speed`                                        | Ball Movement Speed                                             | The speed of the pass, taken as the distance travelled divided by the time taken to get to its destination. | Event      | Metres per second (m/s)                                                                       |                                                                              |
+| `distance_ball_moved`                                        | Distance Ball Moved                                             | The distance in metres that the ball moved.                                                                 | Event      | Metres (m)                                                                                    |
+| `pass.angle`                                                 | Pass Angle                                                      | The angle in radians of the pass…                                                                           | Event      | Radians (rad)                                                                                 |
+| `pass.type.name`                                             | Pass Type Name                                                  | Passes were labelled to be…                                                                                 | Event      | Name                                                                                          |
+| `percent_distance`                                           | Percentage Increase in Distance Towards Goal (Ball Progression) | The percentage increase in distance the ball moved…                                                         | Event      | Percentage (%)                                                                                |
+| `play_pattern.name`                                          | Play Pattern Name                                               | The phase of play relevant to the pass event…                                                               | Event      | Name                                                                                          |
+| `pressing_count_1`, `pressing_count_2`, `pressing_count_3`   | Three Pressure Radii                                            | The number of opposition players…                                                                           | Positional | Count (n)                                                                                     |
+| `right_option`, `front_option`, `left_option`, `back_option` | Unmarked Teammates                                              | Teammates unmarked within 2 metres in four directions.                                                      | Positional | Binary (1/0)                                                                                  |
+
+
+### Additional Metadata Features Required for Subsequent Plotting
+| Variable    | Feature             | Definition                                  | Type  | Unit                   |
+| ----------- | ------------------- | ------------------------------------------- | ----- | ---------------------- |
+| `team.name` | Team Name           | The name of the possession team             | Event | Name                   |
+| `x_end`     | Pass X End Location | The x co-ordinate of the pass end location. | Event | Geometric Co-Ordinates |
+| `y_end`     | Pass Y End Location | The y co-ordinate of the pass end location. | Event | Geometric Co-Ordinates |
+
 
 **Note:** Sample dataset has been randomly generated and anonymised: [sample_data.csv](sample_data.csv)
 
