@@ -19,7 +19,7 @@ cross_validate_turnover_model <- function(data,
     "percent_distance", "pass.angle", "pressing_count_1", "pressing_count_2", "pressing_count_3",
     "play_pattern.name", "pass.type.name", 
     "right_option", "front_option", "left_option", "back_option",
-    "player.name", "match_id", "position_group"
+    "player.name", "match_id", "position_group", "team.name" , "x_end", "y_end"
   )
   
   # Check required variables

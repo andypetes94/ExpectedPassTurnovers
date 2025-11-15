@@ -41,48 +41,25 @@ This ensures reproducibility and matches the feature-engineering approach descri
     variables listed in the "Model Inputs" section.
 3.  **Variable Naming**: Column names must match exactly as specified.
 
-**This model assumes you have already processed your raw data to include
-all required features.**
 
-**Note:** There is sample data provided in this repository: [sample_data.csv](sample_data.csv).
+## Data Requirements
+
+**Ensure your dataset contains all required variables**. Feature preprocessing is required for positional, spatial, and contextual metrics.  
+
+### Required Features
+
+| Category | Variables |
+|----------|-----------|
+| Basic Event Data | `turnover_count`, `player.name`, `match_id`, `position_group` |
+| Spatial Features | `x`, `y`, `x_end`, `y_end`, `distance_ball_moved`, `ball_movement_speed`, `percent_distance`, `pass.angle` |
+| Contextual Features | `play_pattern.name`, `pass.type.name` |
+| Pressing Features | `pressing_count_1`, `pressing_count_2`, `pressing_count_3` |
+| Teammate Orientation | `right_option`, `front_option`, `left_option`, `back_option` |
+| Metadata Variables | `team.name`, `front_option`, `x_end`, `y_end` |
+
+**Note:** Sample dataset provided: [sample_data.csv](sample_data.csv)
 
 In addition, there is a sample output folder: [turnover_model_results_20251114_155537/](turnover_model_results).
-
-
-## 📊 Model Inputs
-
-All variables listed below must be present in your dataset
-before running the model.
-
-### Basic Event Data
-
--   `turnover_count`
--   `player.name`
--   `match_id`
--   `position_group`
-
-### Spatial Features
-
--   `x`, `y`
--   `distance_ball_moved`
--   `ball_movement_speed`
--   `percent_distance`
--   `pass.angle`
-
-### Contextual Features
-
--   `play_pattern.name`
--   `pass.type.name`
-
-### Pressing Features (from positional data)
-
--   `pressing_count_1`
--   `pressing_count_2`
--   `pressing_count_3`
-
-### Teammate Orientation Features (from positional data)
-
--   `right_option`, `front_option`, `left_option`, `back_option`
 
 ## 🔧 Data Preprocessing Requirements
 
@@ -186,28 +163,105 @@ player_analysis <- results$xTurnover_dataset %>%
   )
 ```
 
-------------------------------------------------------------------------
+---
 
-# 🔧 Customisation
+## 🛠 Expected Pass Turnover Plot per Team
 
-## **Model Parameters**
+This script produces a bar plot showing **expected turnovers per 100 passes**, facetted by player **position group**, for a specific team.  
 
-Modify `turnover_cv_analysis.R` to adjust:
+### Script: `team_turnover_plot.R`
 
--   Number of folds (`k_folds`)
--   Optimizer selection (`optimizer`)
--   Maximum iterations (`max_iterations`)
--   Random seed (`seed`)
+### Usage in R
 
-## **Output Options**
+```r
+source("team_turnover_plot.R")
 
-You may edit the script to change:
+team_turnover_plot(
+  data = subset_data,
+  team = "Team_34",
+  min_passes = 30
+)
+```
 
--   Output filenames.
--   Additional summary statistics.
--   Custom plots or visualisations.
+### Output
 
-------------------------------------------------------------------------
+- Saves a PNG in the folder `pressing_target_plots/` (created automatically if missing)  
+- Example output:
+
+![Expected Turnovers per Player](figures/example_team_turnover_plot.png)
+
+---
+
+## 🛠 High-Risk Pass Clustering
+
+This script identifies **high-risk passes** for a team and performs **k-means clustering** on their start and end coordinates.
+
+### Script: `high_risk_pass_analysis.R`
+
+### Usage in R
+
+```r
+source("high_risk_pass_analysis.R")
+
+result <- analyse_high_risk_passes(
+    data = subset_data,
+    team = "Team_34",
+    data_provider = "statsbomb",
+    risk_column = "risk_category",
+    cluster_count = 6
+)
+```
+
+### Command-Line Usage
+
+```bash
+Rscript high_risk_pass_analysis.R \
+  --data sample_data.csv \
+  --team "Team_34" \
+  --clusters 6 \
+  --output high_risk_plot.png \
+  --clusterout cluster_data.csv \
+  --kmodel kmeans_model.rds
+```
+
+### Output
+
+- PNG plot of high-risk passes with clusters  
+- Clustered pass data CSV  
+- K-means model saved as RDS  
+- Output is stored in `high_risk_passes_output/` (auto-created if missing)  
+
+Example plot:  
+
+![High-Risk Pass Clusters](figures/example_high_risk_pass_plot.png)
+
+---
+
+## 🚀 Quick Start
+
+1. Prepare your dataset including all required features.
+2. Run `team_turnover_plot.R` for expected turnover visualisation per team.
+3. Run `high_risk_pass_analysis.R` for high-risk pass clustering analysis.
+4. Inspect output PNGs and CSVs.
+
+---
+
+## ⚙ Customisation
+
+### team_turnover_plot.R
+
+- `team` — team name filter (required)  
+- `min_passes` — minimum passes per player (default 30)  
+
+### high_risk_pass_analysis.R
+
+- `team` — team name filter (required)  
+- `risk_column` — risk classification column (default `"risk_category"`)  
+- `cluster_count` — number of k-means clusters (default 6)  
+- `data_provider` — pitch dimensions (`statsbomb`, `opta`, `wyscout`, etc.)  
+
+---
+
 
 # 📚 Citation
 

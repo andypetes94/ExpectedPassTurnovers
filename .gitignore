@@ -13,7 +13,6 @@
 *.tmp
 
 # Generated model outputs
-# turnover_model_results_*/
 output/
 results/
 *.rds
@@ -25,3 +24,8 @@ results/
 # If using renv
 renv/library/
 renv/staging/
+
+# Folders
+turnover_model_results_*/
+pressing_target_plots/
+high_risk_passes_output/
