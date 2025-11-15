@@ -2,6 +2,7 @@
 [![DOI](https://img.shields.io/badge/DOI-10.1080%2F02640414.2024.2379697-blue)](https://doi.org/10.1080/02640414.2024.2379697)
 [![Sample Data](https://img.shields.io/badge/sample_data-included-brightgreen.svg)](sample_data.csv)
 [![Example Output](https://img.shields.io/badge/example_output-included-blue.svg)](turnover_model_results_20251114_155537)
+![GitHub R Package](https://img.shields.io/badge/package-XTurnoverPlotting-blue?logo=R&logoColor=white)](XTurnoverPlotting)
 
 # xTurnover: Expected Turnover Model for Football Pass Analysis
 
