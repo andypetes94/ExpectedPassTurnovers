@@ -71,6 +71,16 @@ analyse_high_risk_passes <- function(
   kmeans_result <- kmeans(cluster_features, centers = cluster_count, nstart = 25)
   high_risk_data$cluster <- as.factor(kmeans_result$cluster)
   
+  # Count passes per cluster and create label
+  cluster_labels <- high_risk_data %>%
+    group_by(cluster) %>%
+    summarise(n_passes = n()) %>%
+    mutate(facet_label = paste0("Cluster: ", cluster, " (n=", n_passes, ")"))
+  
+  # Join back to high_risk_data
+  high_risk_data <- high_risk_data %>%
+    left_join(cluster_labels, by = "cluster")
+  
   # Plot base
   p <- ggplot(high_risk_data, aes(x = x_end, y = y_end))
   
@@ -94,7 +104,7 @@ analyse_high_risk_passes <- function(
                  alpha = 0.8, show.legend = FALSE) +
     geom_point(aes(color = cluster), shape = 21, alpha = 0.8, fill = "white",
                size = 1.5, show.legend = FALSE) +
-    facet_wrap(~paste0("Cluster: ", cluster), ncol = 3) +
+    facet_wrap(~facet_label, ncol = 3) + 
     scale_color_brewer(type = "qual", palette = "Dark2") +
     labs(
       title = paste("High-Risk Pass Clusters for", team),
