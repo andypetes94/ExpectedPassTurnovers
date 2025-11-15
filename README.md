@@ -37,8 +37,8 @@ DOI: 10.1080/02640414.2024.2379697
 ### Feature Explanation
 | Variable                                                     | Feature                                                         | Definition                                                                                                  | Type       | Unit                                                                                          |
 | ------------------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------- |
-| `x`                                                          | Ball Carrier X Co-ordinate                                      | The x co-ordinate of the pass origin.                                                                       | Event      | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
-| `y`                                                          | Ball Carrier Y Co-ordinate                                      | The y co-ordinate of the pass origin.                                                                       | Event      | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
+| `x`                                                          | Ball Carrier X Co-ordinate                                      | The x co-ordinate of the pass origin.                                                                       | Event      | Geometric Co-Ordinates |
+| `y`                                                          | Ball Carrier Y Co-ordinate                                      | The y co-ordinate of the pass origin.                                                                       | Event      | Geometric Co-Ordinates |
 | `ball_movement_speed`                                        | Ball Movement Speed                                             | The speed of the pass, taken as the distance travelled divided by the time taken to get to its destination. | Event      | Metres per second (m/s)                                                                       |                                                                              |
 | `distance_ball_moved`                                        | Distance Ball Moved                                             | The distance in metres that the ball moved.                                                                 | Event      | Metres (m)                                                                                    |
 | `pass.angle`                                                 | Pass Angle                                                      | The angle in radians of the pass…                                                                           | Event      | Radians (rad)                                                                                 |
@@ -57,7 +57,9 @@ DOI: 10.1080/02640414.2024.2379697
 | `y_end`     | Pass Y End Location | The y co-ordinate of the pass end location. | Event | Geometric Co-Ordinates |
 
 
-**Note:** Sample dataset has been randomly generated and anonymised: [sample_data.csv](sample_data.csv)
+**Note:** For the co-ordinates of x & y variables, *Statsbomb* pitches are between 0 - 120 for x and between 0 - 80 for y.
+
+Sample dataset has been randomly generated and anonymised: [sample_data.csv](sample_data.csv)
 
 Sample output folder: [turnover_model_results_20251114_155537/](turnover_model_results)
 
