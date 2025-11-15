@@ -57,6 +57,28 @@ This ensures reproducibility and matches the feature-engineering approach descri
 | Teammate Orientation | `right_option`, `front_option`, `left_option`, `back_option` |
 | Metadata Variables | `team.name`, `x_end`, `y_end` |
 
+### Feature Explanation
+| Feature | Definition | Type | Unit |
+|--------|------------|------|------|
+| Ball Carrier X Co-ordinate | The x co-ordinate of the pass origin. | Event | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
+| Ball Carrier Y Co-ordinate | The y co-ordinate of the pass origin. | Event | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
+| Ball Movement Speed | The speed of the pass, taken as the distance travelled divided by the time taken to get to its destination. | Event | Metres per second (m/s) |
+| Closest Defender | The distance in metres the closest opposition player is to the ball. | Event | Metres (m) |
+| Distance Ball Moved | The distance in metres that the ball moved. | Event | Metres (m) |
+| Pass Angle | The angle in radians of the pass, calculated clockwise from 0 representing straight ahead, to π. | Event | Radians (rad) |
+| Pass Type Name | Passes were labelled to be from one touch pass from an interception or from a loose ball recovery. The remaining passes were labelled as normal. | Event | Name |
+| Percentage Increase in Distance Towards Goal (Ball Progression) | The percentage increase in distance the ball moved towards the centre of the opposition goal. | Event | Percentage (%) |
+| Play Pattern Name | The phase of play relevant to the pass event including: throw-in, kick-off, goal kick, free kick, counter attack, corner kick. All remaining play patterns were labelled as regular play. | Event | Name |
+| Three Pressure Radii | The number of opposition players independently present within three radii of varying length surrounding the ball carrier. | Positional | Count (n) |
+| Unmarked Teammates | Teammates that had no opponent player within 2 metres, across four different directions (options), were considered as unmarked. | Positional | Binary (1 = marked, 0 = unmarked) |
+
+### Additional Metadata Features Required for Subsequent Plotting
+| Feature | Definition | Type | Unit |
+|--------|------------|------|------|
+| Team Name| The name of the possession team | Event | Name |
+| Pass X End Location | The x co-ordinate of the pass end location. | Event | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
+| Pass Y End Location | The y co-ordinate of the pass end location. | Event | Geometric Co-Ordinates (Statsbomb pitches are between 0 - 120 for x and between 0 - 80 for y) |
+
 **Note:** Sample dataset provided: [sample_data.csv](sample_data.csv)
 
 In addition, there is a sample output folder: [turnover_model_results_20251114_155537/](turnover_model_results).
@@ -65,7 +87,7 @@ In addition, there is a sample output folder: [turnover_model_results_20251114_1
 
 ### Step 1: Positional Data Processing
 
--   Calculate pressing variables ( radii)\
+-   Calculate pressing variables ( radii)
 -   Calculate orientation variables (directional quadrant availability)
 
 ### Step 2: Data Validation
@@ -288,7 +310,7 @@ Example plot:
 
 We welcome extensions, replications, and methodological improvements.
 
-1.  Fork the repository\
+1.  Fork the repository
 
 2.  Create a feature branch:
 
@@ -296,7 +318,7 @@ We welcome extensions, replications, and methodological improvements.
     git checkout -b feature/AmazingFeature
     ```
 
-3.  Test your changes with sample data\
+3.  Test your changes with sample data
 
 4.  Commit:
 
