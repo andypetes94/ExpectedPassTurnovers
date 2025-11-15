@@ -55,7 +55,7 @@ This ensures reproducibility and matches the feature-engineering approach descri
 | Contextual Features | `play_pattern.name`, `pass.type.name` |
 | Pressing Features | `pressing_count_1`, `pressing_count_2`, `pressing_count_3` |
 | Teammate Orientation | `right_option`, `front_option`, `left_option`, `back_option` |
-| Metadata Variables | `team.name`, `front_option`, `x_end`, `y_end` |
+| Metadata Variables | `team.name`, `x_end`, `y_end` |
 
 **Note:** Sample dataset provided: [sample_data.csv](sample_data.csv)
 
@@ -104,13 +104,7 @@ R required columns check:
     )
 
 
-## 🚨 Common Issues and Solutions
-
--   Missing pressing variables → compute using positional data.
--   Missing orientation variables → compute using positional data.
--   Convergence errors → check variable types, missingness, sample size.
-
-## 📊 Generated Outputs
+## 📁 Generated Outputs
 
 -   `dataset_with_xTurnover.csv`
 -   `model_summary_statistics.csv`
@@ -164,6 +158,8 @@ player_analysis <- results$xTurnover_dataset %>%
 ```
 
 ---
+
+# 📊 Plot Outputs
 
 ## 🛠 Expected Pass Turnover Plot per Team
 
