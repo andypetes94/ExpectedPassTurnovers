@@ -1,7 +1,7 @@
-# XTurnoverPlotting
+XTurnoverPlotting
 
 `XTurnoverPlotting` is an R package for analysing football team turnovers and high-risk passes.
-It provides functions to compute per-player turnovers, visualise them by position, and cluster high-risk forward passes to identify tactical patterns.
+It provides functions to compute per-player turnovers, visualise them by position, cluster high-risk forward passes, and analyse team-level xTurnover patterns across the pitch.
 
 ---
 
@@ -82,6 +82,50 @@ head(result$cluster_data)
 
 ---
 
+### `plot_team_turnover_grid()`
+
+Displays the average xTurnover per grid cell across the pitch for a team, color-coded relative to all teams in the same cell.
+
+**Usage:**
+
+```r
+library(XTurnoverPlotting)
+
+# Plot average xTurnover per grid cell with performance coloring
+grid_plot <- plot_team_turnover_grid(
+  data = my_pass_data,
+  x_bin_size = 30,
+  y_bin_size = 20,
+  title = "Team xTurnover Grid",
+  subtitle = "Green = Positive (Low Turnover) | Red = Negative (High Turnover) | Yellow = Neutral"
+)
+
+print(grid_plot)
+```
+
+* **Arguments:**
+
+  * `data`: A data frame with columns `team.name`, `x`, `y`, and `xTurnover`.
+  * `x_bin_size`: Width of each pitch grid cell (default 30).
+  * `y_bin_size`: Height of each pitch grid cell (default 20).
+  * `title`: Optional plot title.
+  * `subtitle`: Optional plot subtitle.
+
+* **Notes:**
+
+  * Tiles are colored based on performance relative to all teams in that grid cell:
+
+    * Green = Positive (low turnover probability)
+    * Yellow = Neutral
+    * Red = Negative (high turnover probability)
+  * Text labels inside each tile show the **2-decimal average xTurnover**.
+  * Text color is automatically adjusted for readability:
+
+    * Neutral = black
+    * Positive/Negative = white
+
+---
+
 ## Example Workflow
 
 ```r
@@ -94,6 +138,10 @@ print(turnover_plot)
 # High-risk pass analysis
 high_risk_result <- analyse_high_risk_passes(my_pass_data, team = "Manchester United")
 print(high_risk_result$plot)
+
+# Team xTurnover grid plot
+grid_plot <- plot_team_turnover_grid(my_pass_data, x_bin_size = 30, y_bin_size = 20)
+print(grid_plot)
 ```
 
 ---

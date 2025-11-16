@@ -110,6 +110,7 @@ analyse_high_risk_passes <- function(
       title = paste("High-Risk Pass Clusters for", team),
       subtitle = paste("Total High-Risk Passes Analysed:", nrow(high_risk_data),
                        "| Circles Indicate Pass End Locations")) +
+    scale_y_reverse() +   # flips the y-axis to match the real pitch orientation for Statsbomb
     theme_pitch() +
     theme(
       plot.title = element_text(family = "Lato", size = 26, face = "bold"),
@@ -130,9 +131,12 @@ analyse_high_risk_passes <- function(
       legend.text = element_text(family = "Lato", size = 10),
       legend.title = element_blank(),
       legend.key.size = unit(0.5, "cm")
-    ) #+
-    #coord_flip(xlim = c(0, 120), ylim = c(-20, 100)) #+
-    #scale_y_reverse(limits = c(-20, 100))
+    ) 
+   
+  # Conditionally add scale_y_reverse()
+  if (tolower(data_provider) == "statsbomb") {
+    p <- p + scale_y_reverse()
+  }
   
   return(list(
     plot = p,

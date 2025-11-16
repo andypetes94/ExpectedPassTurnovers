@@ -109,7 +109,7 @@ compute_turnover_plot <- function(
       aes(xmin = median_turnovers - 0.25, xmax = median_turnovers + 0.25,
           ymin = 0.5, ymax = max_y + 1),
       color = NA, fill = '#3EBCD2', alpha = 0.8
-    ) +
+    ) + 
     geom_text(aes(label = round(turnovers_per_100, 1)),
               size = 3, color = "white", hjust = 1.2, family = "Lato") +
     facet_grid(position_group ~ ., scales = "free_y", space = "free_y",
@@ -120,7 +120,7 @@ compute_turnover_plot <- function(
       x = "Turnovers per 100 Passes",
       y = "Player"
     ) +
-    scale_y_discrete(labels = team_data$player.name) +
+    scale_y_discrete(labels = function(x) sub("^[A-Z]+_", "", x)) +
     scale_x_continuous(limits = c(0, x_max)) +
     theme_minimal(base_family = "Lato") +
     theme(

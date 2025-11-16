@@ -1,0 +1,308 @@
+---
+title: "Tmp"
+output: html_document
+date: "2025-11-15"
+---
+
+
+```{r}
+library(tidyverse)
+
+cleaned_passes <- read.csv('/Users/andrewpeters/Desktop/PhD/Data/final_passes.df') %>%
+  # Remove brackets and separate by comma
+  mutate(temp_coords = str_remove_all(pass.end_location, "\\[|\\]")) %>%
+  separate(temp_coords, into = c("x_end", "y_end"), sep = ", ", convert = TRUE) %>%
+  mutate(position_group = case_when(
+    # Centre Back (CB)
+    position.name %in% c("Center Back", "Right Center Back", "Left Center Back") ~ "CB",
+    
+    # Full-Back (FB)  
+    position.name %in% c("Left Back", "Right Back") ~ "FB",
+    
+    # Wing-Back (WB)
+    position.name %in% c("Left Wing Back", "Right Wing Back") ~ "WB",
+    
+    # Defensive Midfield (DM) - includes natural DMs + CMs in defensive formations
+    position.name %in% c("Center Defensive Midfield", "Left Defensive Midfield", "Right Defensive Midfield") ~ "DM",
+    
+    position.name %in% c("Left Center Midfield", "Right Center Midfield") & 
+    team.tactics.formation %in% c("442", "4411", "4222", "4231", "4321", "343", "3421", "3412") ~ "DM",
+    
+    position.name %in% c("Left Center Midfield", "Right Center Midfield") & 
+    team.tactics.formation %in% c("41212","433","451","4141","352","3511") ~ "AM",
+    
+    # Attacking Midfield (AM) - includes natural AMs + CMs in attacking formations
+    position.name %in% c("Center Attacking Midfield") ~ "AM",
+    
+    # Winger (WG)
+    position.name %in% c("Left Wing", "Right Wing", "Left Midfield", "Right Midfield", "Left Attacking Midfield", "Right Attacking Midfield") ~ "WG",
+    
+    # Striker (ST)
+    position.name %in% c("Center Forward", "Left Center Forward", "Right Center Forward") ~ "ST",
+    
+    # Catch any unmatched positions
+    TRUE ~ "Other"
+  )) %>% 
+  #filter(!is.na(team.tactics.formation)) %>%
+  #head(10000) %>%
+  select(-player.name) %>%
+  mutate(player.name = paste0("Player_", player.id)) %>%
+  mutate(team.name = paste0("Team_", team.id))
+  
+
+other_positions <- cleaned_passes %>%
+  filter(position_group == "Other") %>%
+  select(position.name, position_group, team.tactics.formation) 
+
+subset_data <- cleaned_passes %>%
+  select(
+    # Outcome variable
+    turnover_count,
+    
+    # Predictor variables
+    x, y,
+    play_pattern.name,
+    distance_ball_moved,
+    ball_movement_speed,
+    percent_distance,
+    pass.type.name,
+    pass.angle,
+    pressing_count_1,
+    pressing_count_2,
+    pressing_count_3,
+    right_option,
+    front_option,
+    left_option,
+    back_option,
+    
+    # Random effects grouping variables
+    player.name,
+    match_id,
+    position_group,
+    
+    # Metadata Columns
+    team.name,
+    x_end,
+    y_end
+  )
+
+
+#write_csv(subset_data, file = '/Users/andrewpeters/Desktop/PhD/github/xPT/sample_data.csv')
+
+```
+
+```{r}
+
+# ---- Load libraries ----
+library(dplyr)
+library(ggplot2)
+library(ggsoccer)
+
+data <- read.csv('/Users/andrewpeters/Desktop/PhD/github/xPT/turnover_model_results_20251115_230607/dataset_with_xTurnover.csv')
+
+```
+
+
+```{r}
+
+#min_passes <- 30
+
+#team_name <- "Team_34"
+
+
+# ---- Example: assume your data frame is called 'data' ----
+# Columns: team_name, x, y, xTurnover
+
+# ---- 1. Bin the pitch into grid cells ----
+# Define grid resolution
+x_breaks <- seq(0, 120, by = 30)  # 10 unit bins
+y_breaks <- seq(0, 80, by = 20)
+
+data_grid <- data %>%
+  mutate(
+    x_bin = cut(x, breaks = x_breaks, include.lowest = TRUE, labels = FALSE),
+    y_bin = cut(y, breaks = y_breaks, include.lowest = TRUE, labels = FALSE)
+  )
+
+# ---- 2. Compute league average per grid cell ----
+league_grid <- data_grid %>%
+  group_by(x_bin, y_bin) %>%
+  summarise(
+    league_avg = mean(xTurnover, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# ---- 3. Compute league percentiles for all cells ----
+league_percentiles <- quantile(team_grid$team_avg, probs = c(0.4, 0.6), na.rm = TRUE)
+p40 <- league_percentiles[1]
+p60 <- league_percentiles[2]
+
+# ---- 4. Categorize performance based on percentiles ----
+team_grid <- team_grid %>%
+  mutate(
+    performance = case_when(
+      team_avg < p40 ~ "Negative",   # <40th percentile
+      team_avg > p60 ~ "Positive",   # >60th percentile
+      TRUE ~ "Neutral"
+    ),
+    # Convert bins to pitch coordinates for plotting
+    x_plot = x_breaks[x_bin] + diff(x_breaks)[1]/2,
+    y_plot = y_breaks[y_bin] + diff(y_breaks)[1]/2
+  )
+
+# ---- 5. Plot using ggsoccer ----
+ggplot(team_grid) +
+  annotate_pitch(dimensions = pitch_statsbomb, colour = "black", fill = "white") +
+  geom_tile(aes(x = x_plot, y = y_plot, fill = performance),
+            color = "white", show.legend = F,
+            width = diff(x_breaks)[1], height = diff(y_breaks)[1], alpha = 0.8) +
+  scale_fill_manual(values = c(
+    "Positive" = '#379A8B',
+    "Neutral"  = '#EBB434',
+    "Negative" = '#DB444B'
+  )) +
+  facet_wrap(~team.name) +
+  #coord_flip(xlim = c(0, 120), ylim = c(0, 80)) +
+  scale_y_reverse() +
+  labs(
+    title = "Team xTurnover Performance Relative to League Percentiles",
+    subtitle = "Green Indicates Positive Performance | Red = Negative | Yellow is Average",
+    x = "Pitch X",
+    y = "Pitch Y",
+    fill = "Performance"
+  ) +
+  theme_pitch() +
+  theme(
+      plot.title = element_text(family = "Lato", size = 14, face = "bold"),
+      plot.subtitle = element_text(family = "Lato", size = 10, face = "bold"),
+      axis.title = element_text(family = "Lato", size = 16, face = "bold"),
+      axis.text = element_text(family = "Lato", size = 12),
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_blank(),
+      axis.title.x = element_blank(),
+      strip.background = element_rect(fill = "white"),
+      strip.text = element_text(family = "Lato", size = 8, face = "bold"),
+      panel.background = element_rect(color = "white", fill = "white"),
+      plot.background = element_rect(color = "white", fill = "white"),
+      legend.position = "bottom",
+      legend.text = element_text(family = "Lato", size = 10),
+      legend.title = element_blank(),
+      legend.key.size = unit(0.5, "cm")
+    ) 
+
+
+```
+
+```{r}
+
+# ---- 1. Bin the pitch into grid cells ----
+  x_breaks <- seq(0, 120, by = x_bin_size)
+  y_breaks <- seq(0, 80, by = y_bin_size)
+  
+  data_grid <- data %>%
+    mutate(
+      x_bin = cut(x, breaks = x_breaks, include.lowest = TRUE, labels = FALSE),
+      y_bin = cut(y, breaks = y_breaks, include.lowest = TRUE, labels = FALSE)
+    )
+  
+  # ---- 2. Compute team average per grid cell ----
+  team_grid <- data_grid %>%
+    group_by(team.name, x_bin, y_bin) %>%
+    summarise(
+      team_avg = mean(xTurnover, na.rm = TRUE),
+      .groups = "drop"
+    )
+  
+  # ---- 3. Compute league percentiles per grid cell ----
+  percentiles_grid <- team_grid %>%
+    group_by(x_bin, y_bin) %>%
+    summarise(
+      p40 = quantile(team_avg, 0.4, na.rm = TRUE),
+      p60 = quantile(team_avg, 0.6, na.rm = TRUE),
+      .groups = "drop"
+    )
+  
+  # Join percentiles back to team_grid
+  team_grid <- team_grid %>%
+    left_join(percentiles_grid, by = c("x_bin", "y_bin")) %>%
+    mutate(
+      # ---- Reverse the category logic ----
+      performance = case_when(
+        team_avg < p40 ~ "Positive",   # lower turnover = good
+        team_avg > p60 ~ "Negative",   # higher turnover = bad
+        TRUE ~ "Neutral"
+      ),
+      x_plot = x_breaks[x_bin] + diff(x_breaks)[1]/2,
+      y_plot = y_breaks[y_bin] + diff(y_breaks)[1]/2,
+      label_text = sprintf("%.2f", team_avg)  # 2-decimal average value
+    )
+  
+  # Join percentiles back to team_grid
+  team_grid <- team_grid %>%
+    left_join(percentiles_grid, by = c("x_bin", "y_bin")) %>%
+    mutate(
+      performance = case_when(
+        team_avg < p40 ~ "Negative",
+        team_avg > p60 ~ "Positive",
+        TRUE ~ "Neutral"
+      ),
+      x_plot = x_breaks[x_bin] + diff(x_breaks)[1]/2,
+      y_plot = y_breaks[y_bin] + diff(y_breaks)[1]/2,
+      label_text = sprintf("%.2f", team_avg)  # <-- 2 decimal places for average xTurnover
+    )
+
+```
+
+
+
+```{r}
+
+  # ---- 5. Plot using ggsoccer ----
+  ggplot(team_grid) +
+    annotate_pitch(dimensions = pitch_statsbomb, colour = "black", fill = "white") +
+    geom_tile(aes(x = x_plot, y = y_plot, fill = performance),
+              color = "white", show.legend = FALSE,
+              width = diff(x_breaks)[1], height = diff(y_breaks)[1], alpha = 0.8) +
+    geom_text(aes(x = x_plot, y = y_plot, label = label_text),
+              color = "black", size = 3, family = "Lato", fontface = "bold") +
+    scale_fill_manual(values = c(
+      "Positive" = '#379A8B',
+      "Neutral"  = '#EBB434',
+      "Negative" = '#DB444B'
+    )) +
+    facet_wrap(~team.name) +
+    scale_y_reverse() +
+    labs(
+      title = "Team xTurnover Performance Relative to League Percentiles",
+      subtitle = "Green = Positive | Red = Negative | Yellow = Neutral",
+      x = "Pitch X",
+      y = "Pitch Y",
+      fill = "Performance"
+    ) +
+    theme_pitch() +
+    theme(
+      plot.title = element_text(family = "Lato", size = 24, face = "bold"),
+      plot.subtitle = element_text(family = "Lato", size = 14, face = "bold"),
+      axis.title = element_text(family = "Lato", size = 16, face = "bold"),
+      axis.text = element_text(family = "Lato", size = 12),
+      axis.text.y = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.text.x = element_blank(),
+      axis.title.x = element_blank(),
+      strip.background = element_rect(fill = "white"),
+      strip.text = element_text(family = "Lato", size = 8, face = "bold"),
+      panel.background = element_rect(color = "white", fill = "white"),
+      plot.background = element_rect(color = "white", fill = "white"),
+      legend.position = "bottom",
+      legend.text = element_text(family = "Lato", size = 10),
+      legend.title = element_blank(),
+      legend.key.size = unit(0.5, "cm")
+    )
+  
+```
+

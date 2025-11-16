@@ -227,6 +227,24 @@ head(result$cluster_data)
 
 ![Example High-Risk Passes Plot](figures/example_high_risk_pass_plot.png)
 
+#### 3️⃣ Team xTurnover Grid Plot
+
+```r
+library(XTurnoverPlotting)
+
+# Example: plot average xTurnover per grid cell with performance coloring
+grid_plot <- plot_team_turnover_grid(
+  data = your_prepared_data,
+  x_bin_size = 30,
+  y_bin_size = 20,
+  title = "Team xTurnover Grid",
+  subtitle = "Green = Positive (Low Turnover) | Red = Negative (High Turnover) | Yellow = Neutral"
+)
+
+print(grid_plot)
+```
+![Example Grid Plot](figures/example_grid_plot.png)
+
 ### 📁 Output
 
 - `compute_turnover_plot()` → ggplot2 object  
