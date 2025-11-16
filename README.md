@@ -265,10 +265,13 @@ plot_team_turnover_grid(your_prepared_data, x_max = 120, n_x_bins = 4, n_y_bins 
 plot_team_turnover_grid(your_prepared_data, x_max = 40, n_x_bins = 3, n_y_bins = 3)
 ```
 
+---
+
 ### 📁 Output
 
 - `compute_turnover_plot()` → ggplot2 object  
 - `analyse_high_risk_passes()` → list: `plot`, `cluster_data`, `kmeans_result`
+- `plot_team_turnover_grid` → ggplot2 object  
 
 ---
 
