@@ -196,110 +196,115 @@ ggplot(team_grid) +
 
 ```
 
+
 ```{r}
 
-# ---- 1. Bin the pitch into grid cells ----
-  # Define grid for plotting
-x_breaks <- seq(0, 72, length.out = 3)  
-y_breaks <- seq(0, 80, length.out = 4)  
+set.seed(123)
 
-data_grid <- data %>%
-  filter(x <= 72) %>%   # only keep data in x <= 72
-  mutate(
-    x_bin = cut(x, breaks = x_breaks, include.lowest = TRUE, labels = FALSE),
-    y_bin = cut(y, breaks = y_breaks, include.lowest = TRUE, labels = FALSE)
-  )
-  
-  # ---- 2. Compute team average per grid cell ----
-  team_grid <- data_grid %>%
-    group_by(team.name, x_bin, y_bin) %>%
-    summarise(
-      team_avg = mean(xTurnover, na.rm = TRUE),
-      .groups = "drop"
-    )
-  
-  # ---- 3. Compute league percentiles per grid cell ----
-  percentiles_grid <- team_grid %>%
-    group_by(x_bin, y_bin) %>%
-    summarise(
-      p40 = quantile(team_avg, 0.4, na.rm = TRUE),
-      p60 = quantile(team_avg, 0.6, na.rm = TRUE),
-      .groups = "drop"
-    )
-  
-  # Join percentiles back to team_grid
-  team_grid <- team_grid %>%
-    left_join(percentiles_grid, by = c("x_bin", "y_bin")) %>%
-    mutate(
-      # ---- Reverse the category logic ----
-      performance = case_when(
-        team_avg < p40 ~ "Positive",   # lower turnover = good
-        team_avg > p60 ~ "Negative",   # higher turnover = bad
-        TRUE ~ "Neutral"
-      ),
-      x_plot = x_breaks[x_bin] + diff(x_breaks)[1]/2,
-      y_plot = y_breaks[y_bin] + diff(y_breaks)[1]/2,
-      label_text = sprintf("%.2f", team_avg)  # 2-decimal average value
-    )
-  
-  # Join percentiles back to team_grid
-  team_grid <- team_grid %>%
-    left_join(percentiles_grid, by = c("x_bin", "y_bin")) %>%
-    mutate(
-      performance = case_when(
-        team_avg < p40 ~ "Negative",
-        team_avg > p60 ~ "Positive",
-        TRUE ~ "Neutral"
-      ),
-      x_plot = x_breaks[x_bin] + diff(x_breaks)[1]/2,
-      y_plot = y_breaks[y_bin] + diff(y_breaks)[1]/2,
-      label_text = sprintf("%.2f", team_avg)  # <-- 2 decimal places for average xTurnover
-    )
+n <- 20
+
+new_data <- data.frame(
+  player.name = paste0("Player_", sample(10000:99999, n, replace = TRUE)),
+  xPTF = runif(n, min = 25, max = 33)
+)
+
+# Generate turnovers_forced column: random values from (xPTF - 12) to (xPTF + 6)
+new_data$turnovers_forced <- mapply(function(x) runif(1, min = x - 10, max = x + 10), new_data$xPTF)
+
+# Optional: sort by xPTF descending
+new_data <- new_data[order(-new_data$xPTF), ]
+
+head(new_data)
+
+# Sort dataset by xPTF
+# plot_data <- new_data %>%
+#   arrange(xPTF) %>%
+#   mutate(player.name = factor(player.name, levels = player.name)) %>%
+#   mutate(diff = turnovers_forced -xPTF,
+#          mid_point = (xPTF + turnovers_forced) / 2)  # midpoint for label
 
 
-  # ---- 5. Plot using ggsoccer ----
-  ggplot(team_grid) +
-    annotate_pitch(dimensions = pitch_statsbomb, colour = "black", fill = "white") +
-    geom_tile(aes(x = x_plot, y = y_plot, fill = performance),
-              color = "white", show.legend = FALSE,
-              width = diff(x_breaks)[1], height = diff(y_breaks)[1], alpha = 0.8) +
-    geom_text(aes(x = x_plot, y = y_plot, label = label_text),
-              color = "black", size = 3, family = "Lato", fontface = "bold") +
-    scale_fill_manual(values = c(
-      "Positive" = '#379A8B',
-      "Neutral"  = '#EBB434',
-      "Negative" = '#DB444B'
-    )) +
-    facet_wrap(~team.name) +
-    scale_y_reverse() +
-    labs(
-      title = "Team xTurnover Performance Relative to League Percentiles",
-      subtitle = "Green = Positive | Red = Negative | Yellow = Neutral",
-      x = "Pitch X",
-      y = "Pitch Y",
-      fill = "Performance"
-    ) +
-    theme_pitch() +
-    theme(
-      plot.title = element_text(family = "Lato", size = 24, face = "bold"),
-      plot.subtitle = element_text(family = "Lato", size = 14, face = "bold"),
+plot_data <- new_data %>%
+  arrange(xPTF) %>%
+  mutate(player.name = factor(player.name, levels = player.name),
+         diff = turnovers_forced - xPTF,
+         # Decide where to put label based on which point is left/right
+         label_x = ifelse(turnovers_forced < xPTF,
+                          turnovers_forced - 0.3,  # left of turnovers_forced
+                          turnovers_forced + 0.3), # right of turnovers_forced
+         hjust_val = ifelse(turnovers_forced < xPTF, 1, 0))  # right/left justify
+
+```
+
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+
+colour_values <- c('#DB444B','#006BA2','#3EBCD2','#379A8B','#EBB434','#B4BA39','#9A607F','#D1B07C')
+
+# Plot
+p <- ggplot(plot_data) +
+  geom_segment(aes(x = turnovers_forced, xend = xPTF, 
+                   y = player.name, yend = player.name), color = "gray70", size = 1) +
+  geom_point(aes(x = turnovers_forced, y = player.name), shape = 21, fill = '#DB444B', color = "white", size = 3.5, stroke = 1.5) +
+  geom_point(aes(x = xPTF, y = player.name), shape = 21, fill = '#006BA2',, color = "white", size = 3.5, stroke = 1.5) +
+  # Add differential text above line
+  # geom_text(aes(x = mid_point, y = as.numeric(player.name) + 0.5, 
+  #               label = sprintf("%.1f", diff)), size = 3, color = "gray70", family = "Lato", face = "bold") +
+  geom_text(aes(
+    x = label_x, 
+    y = player.name, 
+    label = ifelse(diff > 0, paste0("+", sprintf("%.1f", diff)), sprintf("%.1f", diff)),
+    hjust = hjust_val, family = "Lato"
+  ),
+  size = 3, color = "black") +
+  labs(
+    x = "Expected Pass Turnovers Forced per 100 Passes",
+    y = "Player",
+    title = "Connected Dot Plot: xPTF vs Turnovers Forced",
+    subtitle = "Blue = xPTF, Red = Turnovers Forced"
+  ) +
+  theme_minimal() +
+  theme(
+      plot.title = element_text(family = "Lato", size = 18, face = "bold"),
+      plot.subtitle = element_text(family = "Lato", size = 12, face = "bold"),
       axis.title = element_text(family = "Lato", size = 16, face = "bold"),
       axis.text = element_text(family = "Lato", size = 12),
       axis.text.y = element_blank(),
       axis.title.y = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      axis.text.x = element_blank(),
-      axis.title.x = element_blank(),
-      strip.background = element_rect(fill = "white"),
-      strip.text = element_text(family = "Lato", size = 8, face = "bold"),
+      axis.text.x = element_text(family = "Lato", size = 8),
+      axis.title.x = element_text(family = "Lato", size = 10),
+      axis.ticks = element_blank(),
+      panel.grid.major.x = element_line(color = "gray90", linewidth = 0.5),   # major x gridlines
+      #panel.grid.minor.x = element_line(color = "gray90", linewidth =  0.25),  
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_blank(),  # remove major y-axis gridlines
+      panel.grid.minor.y = element_blank(),  # remove minor y-axis gridlines
+      strip.background = element_rect(fill = NA, color = NA),
+      strip.text.y = element_text(family = "Lato", size = 8, face = "bold"),
+      strip.placement = "outside",           # key step
       panel.background = element_rect(color = "white", fill = "white"),
       plot.background = element_rect(color = "white", fill = "white"),
       legend.position = "bottom",
       legend.text = element_text(family = "Lato", size = 10),
       legend.title = element_blank(),
-      legend.key.size = unit(0.5, "cm")
-    )
-  
+      legend.key.size = unit(0.5, "cm"),
+      plot.margin = margin(t = 20, r = 20, b = 20, l = 2) 
+    ) + coord_cartesian(clip = "off")
+
+
+p
+
+# Save plot
+ggsave(
+  filename = "connected_dot_plot.png",      # file name
+  plot = p,                                # the ggplot object
+  path = "/Users/andrewpeters/Desktop/PhD/Applications",  # directory
+  #width = 12, height = 8,                  # size in inches
+  dpi = 600                                # resolution
+)
+
 ```
 

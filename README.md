@@ -181,6 +181,7 @@ The `XTurnoverPlotting` R package wraps the core analysis scripts into reusable 
 
 * `compute_turnover_plot()`: Compute and visualise expected turnovers per 100 passes by team and position.
 * `analyse_high_risk_passes()`: Identify, cluster, and plot high-risk passes for a team using k-means.
+* `plot_team_turnover_grid()`: Plot average xPT per grid cell with performance coloring.
 
 ### Installation
 
