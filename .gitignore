@@ -30,3 +30,6 @@ renv/staging/
 pressing_target_plots/
 high_risk_passes_output/
 team_turnover_grids/
+
+#Tmp Files
+Tmp.Rmd

@@ -88,14 +88,15 @@ Displays the average xTurnover per grid cell across the pitch for a team, color-
 
 **Usage:**
 
-```r
+``` r
 library(XTurnoverPlotting)
 
 # Plot average xTurnover per grid cell with performance coloring
 grid_plot <- plot_team_turnover_grid(
   data = my_pass_data,
-  x_bin_size = 30,
-  y_bin_size = 20,
+  x_max = 72,          # default: first 60% of the pitch
+  n_x_bins = 2,        # number of vertical pitch bins
+  n_y_bins = 3,        # number of horizontal pitch bins
   title = "Team xTurnover Grid",
   subtitle = "Green = Positive (Low Turnover) | Red = Negative (High Turnover) | Yellow = Neutral"
 )
@@ -106,8 +107,9 @@ print(grid_plot)
 * **Arguments:**
 
   * `data`: A data frame with columns `team.name`, `x`, `y`, and `xTurnover`.
-  * `x_bin_size`: Width of each pitch grid cell (default 30).
-  * `y_bin_size`: Height of each pitch grid cell (default 20).
+  * `x_max`: Maximum x‑coordinate to include (default **72**).
+  * `n_x_bins`: Number of vertical grid bins (default **2**).
+  * `n_y_bins`: Number of horizontal grid bins (default **3**).
   * `title`: Optional plot title.
   * `subtitle`: Optional plot subtitle.
 
@@ -128,7 +130,7 @@ print(grid_plot)
 
 ## Example Workflow
 
-```r
+``` r
 library(XTurnoverPlotting)
 
 # Turnover analysis
@@ -140,7 +142,12 @@ high_risk_result <- analyse_high_risk_passes(my_pass_data, team = "Manchester Un
 print(high_risk_result$plot)
 
 # Team xTurnover grid plot
-grid_plot <- plot_team_turnover_grid(my_pass_data, x_bin_size = 30, y_bin_size = 20)
+grid_plot <- plot_team_turnover_grid(
+  data = my_pass_data,
+  x_max = 72,
+  n_x_bins = 2,
+  n_y_bins = 3
+)
 print(grid_plot)
 ```
 

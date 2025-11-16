@@ -10,8 +10,8 @@ if (length(args) < 1) {
 }
 
 data_file <- args[1]
-x_bin_size <- ifelse(length(args) >= 2, as.numeric(args[2]), 30)
-y_bin_size <- ifelse(length(args) >= 3, as.numeric(args[3]), 20)
+n_x_bins <- ifelse(length(args) >= 2, as.numeric(args[2]), 2)
+n_y_bins <- ifelse(length(args) >= 3, as.numeric(args[3]), 3)
 
 # ---- Source the function ----
 source("R/plot_team_turnover_grid.R")
@@ -22,8 +22,8 @@ data <- read.csv(data_file)
 # ---- Create the plot ----
 p <- plot_team_turnover_grid(
   data = data,
-  x_bin_size = x_bin_size,
-  y_bin_size = y_bin_size
+  n_x_bins = n_x_bins,
+  n_y_bins = n_y_bins
 )
 
 # ---- Save output ----

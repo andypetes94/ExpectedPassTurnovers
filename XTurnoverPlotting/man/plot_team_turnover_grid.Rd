@@ -2,34 +2,80 @@
 % Please edit documentation in R/plot_team_turnover_grid.R
 \name{plot_team_turnover_grid}
 \alias{plot_team_turnover_grid}
-\title{Plot Team xTurnover Grid}
+\title{Plot Team xTurnover Grid with Flexible Pitch Coverage and Grid Density}
 \usage{
 plot_team_turnover_grid(
   data,
-  x_bin_size = 30,
-  y_bin_size = 20,
+  x_max = 72,
+  n_x_bins = 2,
+  n_y_bins = 3,
   title = NULL,
   subtitle = NULL
 )
 }
 \arguments{
-\item{data}{Data frame with columns \code{team.name}, \code{x}, \code{y}, \code{xTurnover}.}
+\item{data}{A data frame containing at least the following columns:
+\describe{
+\item{team.name}{Team identifier (character or factor).}
+\item{x}{X-coordinate of the event (numeric).}
+\item{y}{Y-coordinate of the event (numeric).}
+\item{xTurnover}{Expected turnover value associated with the event (numeric).}
+}}
 
-\item{x_bin_size}{Width of each pitch grid cell (default 30).}
+\item{x_max}{Numeric. Maximum x-coordinate to include in the plot.
+Defaults to \code{72}, representing the first 60\% of a StatsBomb pitch.}
 
-\item{y_bin_size}{Height of each pitch grid cell (default 20).}
+\item{n_x_bins}{Integer. Number of grid columns to divide the \code{0:x_max}
+range into. Defaults to \code{2}.}
 
-\item{title}{Optional plot title.}
+\item{n_y_bins}{Integer. Number of grid rows to divide the \code{0:80}
+pitch height into. Defaults to \code{3}.}
 
-\item{subtitle}{Optional plot subtitle.}
+\item{title}{Optional character string to override the default plot title.}
+
+\item{subtitle}{Optional character string to override the default plot subtitle.}
 }
 \value{
-ggplot object showing the team's xTurnover grid.
+A \code{ggplot} object showing the team's average xTurnover per grid cell,
+colored by performance category (Positive / Neutral / Negative) based on
+league percentiles in that same cell.
 }
 \description{
-Displays the average xTurnover per pitch grid cell for a team,
-colored by performance relative to all teams in that grid cell.
+This function visualizes a team's average expected pass turnovers (\code{xTurnover})
+across a customizable grid on the pitch. Each grid cell is colored based on
+how the team's turnover performance compares to all other teams within the
+same grid cell using league-wide percentiles (40th and 60th).
+}
+\details{
+The pitch area included in the calculation can be customized using \code{x_max},
+and the number of grid columns/rows is controlled using \code{n_x_bins} and
+\code{n_y_bins}. By default, the function plots the first 72 meters of the pitch
+(60\% of the StatsBomb pitch length) using a 2 × 3 grid, matching your original
+analysis setup.
+
+For each grid cell, the function:
+\enumerate{
+\item Computes each team's mean \code{xTurnover} inside the cell.
+\item Computes the 40th and 60th percentiles across all teams.
+\item Labels performance as:
+\itemize{
+\item \strong{Positive}: team value < p40 (lower turnover is better)
+\item \strong{Neutral}: between p40 and p60
+\item \strong{Negative}: team value > p60 (higher turnover is worse)
+}
+\item Plots a tile grid with centered labels.
+}
 }
 \examples{
+\dontrun{
+# Default behavior (2×3 grid, first 72m of pitch)
 plot_team_turnover_grid(my_pass_data)
+
+# Increase grid resolution to 4×6 bins
+plot_team_turnover_grid(my_pass_data, n_x_bins = 4, n_y_bins = 6)
+
+# Plot full pitch with a 3×3 grid
+plot_team_turnover_grid(my_pass_data, x_max = 120, n_x_bins = 3, n_y_bins = 3)
+}
+
 }

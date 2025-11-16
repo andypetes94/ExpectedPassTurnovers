@@ -227,23 +227,43 @@ head(result$cluster_data)
 
 ![Example High-Risk Passes Plot](figures/example_high_risk_pass_plot.png)
 
-#### 3️⃣ Team xTurnover Grid Plot
+### 3️⃣ Team xTurnover Grid Plot
 
-```r
+``` r
 library(XTurnoverPlotting)
 
 # Example: plot average xTurnover per grid cell with performance coloring
 grid_plot <- plot_team_turnover_grid(
   data = your_prepared_data,
-  x_bin_size = 30,
-  y_bin_size = 20,
+  x_max = 72,          # plot the first 60% of the pitch (default)
+  n_x_bins = 2,        # number of vertical bins
+  n_y_bins = 3,        # number of horizontal bins
   title = "Team xTurnover Grid",
   subtitle = "Green = Positive (Low Turnover) | Red = Negative (High Turnover) | Yellow = Neutral"
 )
 
 print(grid_plot)
 ```
+
 ![Example Grid Plot](figures/example_grid_plot.png)
+
+#### Higher‑resolution grid
+
+``` r
+plot_team_turnover_grid(your_prepared_data, n_x_bins = 4, n_y_bins = 6)
+```
+
+#### Full‑pitch grid (0--120m)
+
+``` r
+plot_team_turnover_grid(your_prepared_data, x_max = 120, n_x_bins = 4, n_y_bins = 4)
+```
+
+#### Custom 3×3 grid in the attacking third
+
+``` r
+plot_team_turnover_grid(your_prepared_data, x_max = 40, n_x_bins = 3, n_y_bins = 3)
+```
 
 ### 📁 Output
 

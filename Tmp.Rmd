@@ -199,14 +199,16 @@ ggplot(team_grid) +
 ```{r}
 
 # ---- 1. Bin the pitch into grid cells ----
-  x_breaks <- seq(0, 120, by = x_bin_size)
-  y_breaks <- seq(0, 80, by = y_bin_size)
-  
-  data_grid <- data %>%
-    mutate(
-      x_bin = cut(x, breaks = x_breaks, include.lowest = TRUE, labels = FALSE),
-      y_bin = cut(y, breaks = y_breaks, include.lowest = TRUE, labels = FALSE)
-    )
+  # Define grid for plotting
+x_breaks <- seq(0, 72, length.out = 3)  
+y_breaks <- seq(0, 80, length.out = 4)  
+
+data_grid <- data %>%
+  filter(x <= 72) %>%   # only keep data in x <= 72
+  mutate(
+    x_bin = cut(x, breaks = x_breaks, include.lowest = TRUE, labels = FALSE),
+    y_bin = cut(y, breaks = y_breaks, include.lowest = TRUE, labels = FALSE)
+  )
   
   # ---- 2. Compute team average per grid cell ----
   team_grid <- data_grid %>%
@@ -254,11 +256,6 @@ ggplot(team_grid) +
       label_text = sprintf("%.2f", team_avg)  # <-- 2 decimal places for average xTurnover
     )
 
-```
-
-
-
-```{r}
 
   # ---- 5. Plot using ggsoccer ----
   ggplot(team_grid) +
