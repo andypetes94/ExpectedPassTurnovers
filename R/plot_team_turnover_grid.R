@@ -1,11 +1,28 @@
-suppressPackageStartupMessages({
-  library(dplyr)
-  library(ggplot2)
-  library(ggsoccer)
-})
+#' Plot Team xTurnover Grid
+#'
+#' Displays the average xTurnover per pitch grid cell for a team,
+#' colored by performance relative to all teams in that grid cell.
+#'
+#' @param data Data frame with columns `team.name`, `x`, `y`, `xTurnover`.
+#' @param x_bin_size Width of each pitch grid cell (default 30).
+#' @param y_bin_size Height of each pitch grid cell (default 20).
+#' @param title Optional plot title.
+#' @param subtitle Optional plot subtitle.
+#'
+#' @return ggplot object showing the team's xTurnover grid.
+#' @export
+#'
+#' @examples
+#' plot_team_turnover_grid(my_pass_data)
 
 plot_team_turnover_grid <- function(data, x_bin_size = 30, y_bin_size = 20,
                                     title = NULL, subtitle = NULL) {
+  
+  suppressMessages({
+    library(dplyr)
+    library(ggplot2)
+    library(ggsoccer)
+  })
   
   # ---- 1. Bin the pitch into grid cells ----
   x_breaks <- seq(0, 120, by = x_bin_size)
