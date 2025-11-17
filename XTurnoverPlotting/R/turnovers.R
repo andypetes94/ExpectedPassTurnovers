@@ -55,6 +55,9 @@ compute_turnover_plot <- function(
       median_turnovers = median(turnovers_per_100, na.rm = TRUE),
       p25_turnovers = quantile(turnovers_per_100, 0.25, na.rm = TRUE),
       p75_turnovers = quantile(turnovers_per_100, 0.75, na.rm = TRUE),
+      p40_turnovers = quantile(turnovers_per_100, 0.40, na.rm = TRUE),
+      p60_turnovers = quantile(turnovers_per_100, 0.60, na.rm = TRUE),
+      p100_turnovers = quantile(turnovers_per_100, 1.00, na.rm = TRUE),
       .groups = "drop"
     )
   
@@ -93,30 +96,36 @@ compute_turnover_plot <- function(
     slice_head(n = 1) %>% 
     ungroup()
   
-  x_max <- max(60, max(team_data$turnovers_per_100, na.rm = TRUE))
+  x_max <- max(turnover_stats$p100_turnovers, na.rm = TRUE)
   
   # ---- Create Plot ----
   p <- ggplot(team_data, aes(x = turnovers_per_100, y = player_position)) +
     geom_rect(
       data = team_turnover_summary,
-      aes(xmin = p75_turnovers, xmax = Inf,
+      aes(xmin = p75_turnovers, xmax = p100_turnovers,
           ymin = 0.5, ymax = max_y + 0.5),
       fill = '#DB444B', color = NA, alpha = 0.4
     ) +
     geom_col(fill = '#006BA2') +
     geom_rect(
       data = team_turnover_summary,
-      aes(xmin = median_turnovers - 0.25, xmax = median_turnovers + 0.25,
-          ymin = 0.5, ymax = max_y + 1),
+      aes(xmin = median_turnovers - 0.15, xmax = median_turnovers + 0.15,
+          ymin = 0.25, ymax = max_y + 0.75),
       color = NA, fill = '#3EBCD2', alpha = 0.8
     ) + 
+    # geom_rect(
+    #   data = team_turnover_summary,
+    #   aes(xmin = p25_turnovers - 0.15, xmax = p25_turnovers + 0.15,
+    #       ymin = 0.25, ymax = max_y + 0.75),
+    #   color = NA, fill = '#379A8B', alpha = 0.8
+    # ) + 
     geom_text(aes(label = round(turnovers_per_100, 1)),
               size = 3, color = "white", hjust = 1.2, family = "Lato") +
     facet_grid(position_group ~ ., scales = "free_y", space = "free_y",
                switch = "y") +
     labs(
       title = paste0("Expected Pass Turnovers per 100 Passes | Team: ", team_name),
-      subtitle = paste("Median Indicated by Light Blue Line | > 75th Percentile Indicated by Red Zone"),
+      subtitle = paste("Median Indicated by Light Blue Line | 75th - 100th Percentile Indicated by Red Zone"),
       x = "Turnovers per 100 Passes",
       y = "Player"
     ) +
