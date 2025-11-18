@@ -103,7 +103,7 @@ compute_turnover_plot <- function(
     geom_rect(
       data = team_turnover_summary,
       aes(xmin = p75_turnovers, xmax = p100_turnovers,
-          ymin = 0.5, ymax = max_y + 0.5),
+          ymin = 0.25, ymax = max_y + 0.75),
       fill = '#DB444B', color = NA, alpha = 0.4
     ) +
     geom_col(fill = '#006BA2') +
