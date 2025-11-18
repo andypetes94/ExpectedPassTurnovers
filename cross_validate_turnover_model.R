@@ -1,3 +1,5 @@
+options(warn = 1)
+
 cross_validate_turnover_model <- function(data, 
                                           outcome_var = "turnover_count",
                                           k_folds = 5,
@@ -13,25 +15,49 @@ cross_validate_turnover_model <- function(data,
   
   set.seed(seed)
   
-  # Define required variables
-  required_vars <- c(
+  # ---------------------------------------------------------------
+  # REQUIRED + OPTIONAL VARIABLES
+  # ---------------------------------------------------------------
+  
+  required_model_vars <- c(
     outcome_var, "x", "y", "distance_ball_moved", "ball_movement_speed", 
     "percent_distance", "pass.angle", "pressing_count_1", "pressing_count_2", "pressing_count_3",
     "play_pattern.name", "pass.type.name", 
     "right_option", "front_option", "left_option", "back_option",
-    "player.name", "match_id", "position_group", "team.name" , "x_end", "y_end"
+    "player.name", "match_id", "position_group"
   )
   
+  optional_plot_vars <- c("team.name", "x_end", "y_end")
+  
   # Check required variables
-  missing_vars <- setdiff(required_vars, names(data))
-  if (length(missing_vars) > 0) {
-    stop("Missing required variables: ", paste(missing_vars, collapse = ", "))
+  missing_required <- setdiff(required_model_vars, names(data))
+  if (length(missing_required) > 0) {
+    stop("Missing required variables: ", paste(missing_required, collapse = ", "))
   }
+  
+  # Check optional variables
+  missing_optional <- setdiff(optional_plot_vars, names(data))
+  if (length(missing_optional) > 0) {
+    warning(
+      "Optional variables missing (subsequent plotting functions may not work): ",
+      paste(missing_optional, collapse = ", ")
+    )
+  }
+  
+  # Use optional vars only if present
+  vars_to_use <- c(
+    required_model_vars,
+    intersect(optional_plot_vars, names(data))
+  )
   
   # Clean data
   clean_data <- data %>%
-    select(all_of(required_vars)) %>%
+    dplyr::select(all_of(vars_to_use)) %>%
     na.omit()
+  
+  # ---------------------------------------------------------------
+  # PRINT INFO
+  # ---------------------------------------------------------------
   
   if (verbose) {
     cat("=== 5-FOLD CROSS-VALIDATION ===\n")
@@ -41,36 +67,34 @@ cross_validate_turnover_model <- function(data,
     cat("\n")
   }
   
-  # Create folds (stratified by outcome)
+  # Create folds stratified by outcome
   n_obs <- nrow(clean_data)
-  
-  # Stratified sampling to ensure balanced folds
   outcome_0 <- which(clean_data[[outcome_var]] == 0)
   outcome_1 <- which(clean_data[[outcome_var]] == 1)
   
   folds_0 <- split(sample(outcome_0), rep(1:k_folds, length.out = length(outcome_0)))
   folds_1 <- split(sample(outcome_1), rep(1:k_folds, length.out = length(outcome_1)))
   
-  # Combine folds
   folds <- list()
   for (i in 1:k_folds) {
     folds[[i]] <- c(folds_0[[i]], folds_1[[i]])
   }
   
-  # Storage for results
   fold_results <- list()
   all_predictions <- data.frame()
   
-  # Define numeric variables for scaling
+  # numeric variables
   numeric_vars <- c("x", "y", "distance_ball_moved", "ball_movement_speed", 
                     "percent_distance", "pass.angle", "pressing_count_1", 
                     "pressing_count_2", "pressing_count_3")
   
-  # Cross-validation loop
+  # ---------------------------------------------------------------
+  # CROSS-VALIDATION
+  # ---------------------------------------------------------------
+  
   for (fold in 1:k_folds) {
     if (verbose) cat("Processing Fold", fold, "of", k_folds, "...\n")
     
-    # Split data
     test_indices <- folds[[fold]]
     train_indices <- setdiff(1:n_obs, test_indices)
     
@@ -82,7 +106,7 @@ cross_validate_turnover_model <- function(data,
       cat(" Test set:", nrow(test_data), "obs\n")
     }
     
-    # Scale training data and get scaling parameters
+    # scaling
     scaling_params <- list()
     train_data_scaled <- train_data
     
@@ -91,19 +115,17 @@ cross_validate_turnover_model <- function(data,
         mean = mean(train_data[[var]], na.rm = TRUE),
         sd = sd(train_data[[var]], na.rm = TRUE)
       )
-      
       train_data_scaled[[paste0(var, "_scaled")]] <- 
         (train_data[[var]] - scaling_params[[var]]$mean) / scaling_params[[var]]$sd
     }
     
-    # Apply same scaling to test data
     test_data_scaled <- test_data
     for (var in numeric_vars) {
       test_data_scaled[[paste0(var, "_scaled")]] <- 
         (test_data[[var]] - scaling_params[[var]]$mean) / scaling_params[[var]]$sd
     }
     
-    # Build model formula
+    # model formula
     scaled_predictors <- paste0(numeric_vars, "_scaled")
     factor_predictors <- c("as.factor(play_pattern.name)", "as.factor(pass.type.name)",
                            "as.factor(right_option)", "as.factor(front_option)", 
@@ -111,10 +133,11 @@ cross_validate_turnover_model <- function(data,
     all_predictors <- c(scaled_predictors, factor_predictors)
     random_effects <- "(1 | player.name) + (1 | match_id) + (1 | position_group)"
     
-    formula_str <- paste(outcome_var, "~", paste(all_predictors, collapse = " + "), "+", random_effects)
-    model_formula <- as.formula(formula_str)
+    model_formula <- as.formula(
+      paste(outcome_var, "~", paste(all_predictors, collapse = " + "), "+", random_effects)
+    )
     
-    # Fit model on training data
+    # fit model
     tryCatch({
       fold_model <- glmer(
         formula = model_formula,
@@ -123,37 +146,29 @@ cross_validate_turnover_model <- function(data,
         control = glmerControl(optimizer = optimizer, optCtrl = list(maxfun = max_iterations))
       )
       
-      # Make predictions on test data
+      # predictions
       pred_probs <- predict(fold_model, newdata = test_data_scaled, type = "response", allow.new.levels = TRUE)
       pred_classes <- ifelse(pred_probs > 0.5, 1, 0)
-      
-      # Calculate metrics
       actual <- test_data[[outcome_var]]
       
-      # Accuracy
       accuracy <- mean(pred_classes == actual)
-      
-      # Confusion matrix components
       tp <- sum(pred_classes == 1 & actual == 1)
       tn <- sum(pred_classes == 0 & actual == 0)
       fp <- sum(pred_classes == 1 & actual == 0)
       fn <- sum(pred_classes == 0 & actual == 1)
       
-      # Additional metrics
       precision <- ifelse(tp + fp > 0, tp / (tp + fp), 0)
       recall <- ifelse(tp + fn > 0, tp / (tp + fn), 0)
       specificity <- ifelse(tn + fp > 0, tn / (tn + fp), 0)
-      f1 <- ifelse(precision + recall > 0, 2 * (precision * recall) / (precision + recall), 0)
+      f1 <- ifelse(precision + recall > 0, 
+                   2 * (precision * recall) / (precision + recall), 0)
       
-      # AUC (if pROC available)
       auc_value <- NA
       if (require(pROC, quietly = TRUE)) {
-        tryCatch({
-          auc_value <- as.numeric(auc(actual, pred_probs))
-        }, error = function(e) auc_value <<- NA)
+        auc_value <- tryCatch(as.numeric(auc(actual, pred_probs)),
+                              error = function(e) NA)
       }
       
-      # Store fold results
       fold_results[[fold]] <- list(
         fold = fold,
         n_train = nrow(train_data),
@@ -165,11 +180,11 @@ cross_validate_turnover_model <- function(data,
         specificity = specificity,
         f1 = f1,
         auc = auc_value,
-        confusion_matrix = matrix(c(tn, fp, fn, tp), nrow = 2, 
-                                  dimnames = list(Actual = c("0", "1"), Predicted = c("0", "1")))
+        confusion_matrix = matrix(c(tn, fp, fn, tp), nrow = 2,
+                                  dimnames = list(Actual = c("0", "1"),
+                                                  Predicted = c("0", "1")))
       )
       
-      # Store individual predictions
       fold_predictions <- data.frame(
         fold = fold,
         actual = actual,
@@ -181,8 +196,8 @@ cross_validate_turnover_model <- function(data,
       all_predictions <- rbind(all_predictions, fold_predictions)
       
       if (verbose) {
-        cat("    Accuracy:", round(accuracy, 3), 
-            "| AUC:", round(ifelse(is.na(auc_value), 0, auc_value), 3), 
+        cat("    Accuracy:", round(accuracy, 3),
+            "| AUC:", round(ifelse(is.na(auc_value), 0, auc_value), 3),
             "| Converged:", fold_model@optinfo$conv$opt == 0, "\n")
       }
       
@@ -191,18 +206,15 @@ cross_validate_turnover_model <- function(data,
       fold_results[[fold]] <- list(fold = fold, error = e$message)
     })
   }
-  # Calculate overall metrics
-  if (verbose) cat("\n=== CROSS-VALIDATION RESULTS ===\n")
   
-  # Extract successful fold metrics
+  # successful folds
   successful_folds <- fold_results[sapply(fold_results, function(x) is.null(x$error))]
-  
   if (length(successful_folds) == 0) {
     cat("ERROR: No folds completed successfully!\n")
     return(NULL)
   }
   
-  # Summary statistics
+  # summary stats
   accuracies <- sapply(successful_folds, function(x) x$accuracy)
   precisions <- sapply(successful_folds, function(x) x$precision)
   recalls <- sapply(successful_folds, function(x) x$recall)
@@ -212,7 +224,7 @@ cross_validate_turnover_model <- function(data,
   
   summary_stats <- data.frame(
     Metric = c("Accuracy", "Precision", "Recall", "F1-Score", "AUC"),
-    Mean = c(mean(accuracies), mean(precisions), mean(recalls), mean(f1_scores), 
+    Mean = c(mean(accuracies), mean(precisions), mean(recalls), mean(f1_scores),
              ifelse(length(aucs) > 0, mean(aucs), NA)),
     SD = c(sd(accuracies), sd(precisions), sd(recalls), sd(f1_scores),
            ifelse(length(aucs) > 0, sd(aucs), NA)),
@@ -223,23 +235,23 @@ cross_validate_turnover_model <- function(data,
   )
   
   if (verbose) {
-    cat("Summary Statistics:\n")
-    # Fix for the printing error
+    cat("\n=== CROSS-VALIDATION RESULTS ===\n")
     summary_display <- summary_stats
     summary_display[, -1] <- round(summary_stats[, -1], 3)
     print(summary_display)
     cat("\nSuccessful folds:", length(successful_folds), "out of", k_folds, "\n")
   }
   
-  # Overall confusion matrix (aggregated)
-  overall_confusion <- table(Actual = all_predictions$actual, 
-                             Predicted = all_predictions$predicted_class)
+  # confusion matrix
+  overall_confusion <- table(
+    Actual = all_predictions$actual,
+    Predicted = all_predictions$predicted_class
+  )
   
   if (verbose) {
     cat("\nOverall Confusion Matrix:\n")
     print(overall_confusion)
     
-    # Overall AUC
     if (require(pROC, quietly = TRUE) && nrow(all_predictions) > 0) {
       tryCatch({
         overall_auc <- auc(all_predictions$actual, all_predictions$predicted_prob)
@@ -250,7 +262,7 @@ cross_validate_turnover_model <- function(data,
     }
   }
   
-  # Create detailed results by fold
+  # fold summary
   fold_summary <- do.call(rbind, lapply(successful_folds, function(x) {
     data.frame(
       fold = x$fold,
@@ -266,20 +278,19 @@ cross_validate_turnover_model <- function(data,
     )
   }))
   
-  # CREATE xTURNOVER DATASET - This is the key addition!
+  # ---------------------------------------------------------------
+  # CREATE xTURNOVER DATASET
+  # ---------------------------------------------------------------
+  
   if (verbose) cat("\nCreating xTurnover dataset...\n")
   
-  # Start with original clean data
   xTurnover_dataset <- clean_data
-  
-  # Initialize new columns
   xTurnover_dataset$xTurnover <- NA
   xTurnover_dataset$predicted_turnover <- NA
   xTurnover_dataset$cv_fold <- NA
   xTurnover_dataset$risk_category <- NA
   xTurnover_dataset$correct_prediction <- NA
   
-  # Fill in predictions for each observation
   for (i in 1:nrow(all_predictions)) {
     row_idx <- all_predictions$row_index[i]
     xTurnover_dataset$xTurnover[row_idx] <- all_predictions$predicted_prob[i]
@@ -289,20 +300,11 @@ cross_validate_turnover_model <- function(data,
       (xTurnover_dataset[[outcome_var]][row_idx] == all_predictions$predicted_class[i])
   }
   
-  # Add risk categories based on xTurnover probabilities
-  xTurnover_dataset$risk_category <- case_when(
-    is.na(xTurnover_dataset$xTurnover) ~ "No Prediction",
-    xTurnover_dataset$xTurnover < 0.3 ~ "Low Risk",
-    xTurnover_dataset$xTurnover < 0.7 ~ "Medium Risk",
-    TRUE ~ "High Risk"
-  )
-  
-  # Add risk categories based on xTurnover probabilities using 2 standard deviations
   xTurnover_mean <- mean(xTurnover_dataset$xTurnover, na.rm = TRUE)
   xTurnover_sd <- sd(xTurnover_dataset$xTurnover, na.rm = TRUE)
   high_risk_threshold <- xTurnover_mean + (2 * xTurnover_sd)
   
-  xTurnover_dataset$risk_category <- case_when(
+  xTurnover_dataset$risk_category <- dplyr::case_when(
     is.na(xTurnover_dataset$xTurnover) ~ "No Prediction",
     xTurnover_dataset$xTurnover >= high_risk_threshold ~ "High Risk",
     TRUE ~ "Non-High Risk"
@@ -311,16 +313,14 @@ cross_validate_turnover_model <- function(data,
   if (verbose) {
     cat("xTurnover dataset created with", nrow(xTurnover_dataset), "observations\n")
     cat("xTurnover mean:", round(xTurnover_mean, 4), "\n")
-    cat("xTurnover standard deviation:", round(xTurnover_sd, 4), "\n")
-    cat("High-risk threshold (mean + 2*SD):", round(high_risk_threshold, 4), "\n")
-    cat("Risk category distribution:\n")
+    cat("xTurnover SD:", round(xTurnover_sd, 4), "\n")
+    cat("High-risk threshold:", round(high_risk_threshold, 4), "\n")
     print(table(xTurnover_dataset$risk_category))
     
-    # Show prediction accuracy by risk category
     accuracy_by_risk <- xTurnover_dataset %>%
-      filter(!is.na(xTurnover)) %>%
-      group_by(risk_category) %>%
-      summarise(
+      dplyr::filter(!is.na(xTurnover)) %>%
+      dplyr::group_by(risk_category) %>%
+      dplyr::summarise(
         n_passes = n(),
         actual_turnover_rate = mean(.data[[outcome_var]], na.rm = TRUE),
         predicted_turnover_rate = mean(xTurnover, na.rm = TRUE),
@@ -329,20 +329,18 @@ cross_validate_turnover_model <- function(data,
       )
     
     cat("\nAccuracy by Risk Category:\n")
-    # Fix: Only round the numeric columns
-    accuracy_display <- accuracy_by_risk
-    accuracy_display[, -1] <- round(accuracy_by_risk[, -1], 3)
-    print(accuracy_display)
+    acc_disp <- accuracy_by_risk
+    acc_disp[, -1] <- round(accuracy_by_risk[, -1], 3)
+    print(acc_disp)
   }
   
-  # Return comprehensive results
   results <- list(
     summary_stats = summary_stats,
     fold_details = fold_summary,
     fold_results = fold_results,
     all_predictions = all_predictions,
     overall_confusion_matrix = overall_confusion,
-    xTurnover_dataset = xTurnover_dataset,  # This is the key output!
+    xTurnover_dataset = xTurnover_dataset,
     successful_folds = length(successful_folds),
     total_folds = k_folds,
     parameters = list(
